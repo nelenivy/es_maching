@@ -49,6 +49,9 @@ This project utilizes several datasets for training and evaluation:
 
 # cikm2016 dataset
 
+* Top-30 candidates are retrieved by retriever and then classified by reranker
+* The target is classification of positive pairs
+
 | Algorithm                                         | F1 Score | Precision | Recall |
 |---------------------------------------------------|----------|-----------|--------|
 | Late fusion, RNN                                  | 0.39     | 0.39      | 0.39   |
@@ -78,6 +81,9 @@ This project utilizes several datasets for training and evaluation:
 | COLES Augmentation, Loss Only for Matching Different Modalities | 0.324945            | 0.325092            |
 
 ## Reranker Model Performance
+
+* Top-100 candidates are retrieved by retriever, positive pairs are added, they are samples in 1:4 ratio, and this set is then classified by reranker
+* The target is classification of positive pairs
 
 *   **Batch Size:** Train 1024
 *   **Loss:** BCEWithLogitsLoss
@@ -111,6 +117,9 @@ This project utilizes several datasets for training and evaluation:
 
 
 ## Reranker Model Performance
+
+* Top-100 candidates are retrieved by retriever, positive pairs are added, they are samples in 1:4 ratio, and this set is then classified by reranker
+* The target is classification of positive pairs
 
 *   **Batch Size:** Train 64
 *   **Loss:** BCEWithLogitsLoss
