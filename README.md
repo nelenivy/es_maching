@@ -84,6 +84,7 @@ This project utilizes several datasets for training and evaluation:
 *   **Optimizer:** AdamW, LR 1e-4, Weight Decay 1e-5
 *   **LR Scheduler:** StepLR, Step Size 1, Gamma 0.95
 *   **Warmup Steps:** 200
+
 | Model                                                                 | ROC AUC | F1    |
 | :-------------------------------------------------------------------- | :------ | :---- |
 | Vanilla Cross Encoder                                                 | 0.712   | 0.665 |
