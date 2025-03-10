@@ -79,6 +79,7 @@ This project utilizes several datasets for training and evaluation:
 
 ## Reranker Model Performance
 
+# MBD dataset:
 *   **Batch Size:** Train 1024
 *   **Loss:** BCEWithLogitsLoss
 *   **Optimizer:** AdamW, LR 1e-4, Weight Decay 1e-5
@@ -92,6 +93,24 @@ This project utilizes several datasets for training and evaluation:
 | Early Fusion + Blending + Dynamic Time Bias                          | 0.718   | 0.668 |
 | Early Fusion + Blending + Dynamic (Time + Modalities) Bias | 0.717   | 0.670 |
 
+
+# data fusion dataset:
+*   **Batch Size:** Train 64
+*   **Loss:** BCEWithLogitsLoss
+*   **Optimizer:** AdamW, LR 1e-4, Weight Decay 1e-6
+*   **LR Scheduler:** StepLR, Step Size 1, Gamma 0.95
+*   **Warmup Steps:** 200
+
+| Model                                                                 | ROC AUC | F1    |
+| :-------------------------------------------------------------------- | :------ | :---- |
+| Early Fusion + Blending, Time2Vec + Dynamic Bias                      | 0.688   | 0.468 |
+| Early Fusion + Blending, Time2Vec, Diff Embd                         | 0.692   | 0.475 |
+| Early Fusion + Blending, Time2Vec                                     | 0.710   | 0.485 |
+| Vanilla Cross-Encoder, Rotary Embd                                   | 0.679   | 0.462 |
+| Vanilla Cross-Encoder, Pos Sinus Embd                                | 0.692   | 0.476 |
+| Vanilla Cross-Encoder, Time2Vec                                       | 0.709   | 0.485 |
+| Vanilla Cross-Encoder, Time2Vec + Dynamic Bias                       | 0.701   | 0.484 |
+| Vanilla Cross-Encoder, Time2Vec, Diff Embd                             | 0.706   | 0.485 |
 
 # bash files for running training 
 bash files with launching runs are .sh files in the root repo.
