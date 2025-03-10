@@ -85,6 +85,7 @@ This project utilizes several datasets for training and evaluation:
 * Top-100 candidates are retrieved by retriever, positive pairs are added, they are samples in 1:4 ratio, and this set is then classified by reranker
 * The target is classification of positive pairs
 
+## Training parameters
 *   **Batch Size:** Train 1024
 *   **Loss:** BCEWithLogitsLoss
 *   **Optimizer:** AdamW, LR 1e-4, Weight Decay 1e-5
@@ -121,7 +122,7 @@ This project utilizes several datasets for training and evaluation:
 * Top-100 candidates are retrieved by retriever, positive pairs are added, they are samples in 1:4 ratio, and this set is then classified by reranker
 * The target is classification of positive pairs
 
-
+## Training parameters
 *   **Batch Size:** Train 64
 *   **Loss:** BCEWithLogitsLoss
 *   **Optimizer:** AdamW, LR 1e-4, Weight Decay 1e-6
