@@ -1,0 +1,5 @@
+file_path_train: 
+    - /home/amshestov/smchankaev/data/mm_cross_enc_300/train
+  
+file_path_val: 
+    - /home/amshestov/smchankaev/data/mm_cross_enc_300/val

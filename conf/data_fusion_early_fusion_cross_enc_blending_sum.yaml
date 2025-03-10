@@ -1,0 +1,88 @@
+defaults:
+  - _self_
+  - ifilters: data_fusion
+  - trx: data_fusion
+  - split: splitters
+  - seq_encoder: early_fusion_time
+
+exp_name: data_fusion_early_fusion_cross_enc_blending_sum
+logger_name: ${exp_name}
+sec_encoder_class: early_fusion_matching.M3FusionModEncoderContainer
+trainer:
+    # _target_: pytorch_lightning.Trainer
+    max_epochs: 32
+    accelerator: gpu
+    devices: 1
+    enable_progress_bar: True
+    gradient_clip_val: 0.5
+    log_every_n_steps: 50
+    limit_val_batches: 512
+    accumulate_grad_batches: 1
+    deterministic: True
+    precision: bf16
+
+data_module:
+  _target_: ptls.frames.PtlsDataModule
+  train_data:
+    _target_: matching_bank_x_rmb.M3ColesSupervisedIterableDataset
+    splitter: ${split.no_split} #${split.splitter_2}
+    col_time: event_time
+    cols_classes:
+      - label
+    mod_names:
+     - click
+     - trx
+    data:
+        _target_: parquet_shuffle_dataset.ShuffleParquetDataset
+        shuffle_files: True
+        shuffle_one_file: True
+        i_filters: ${ifilters.i_filters_early_fusion}  
+        data_files:
+            _target_: ptls.data_load.datasets.ParquetFiles
+            file_path: 
+              - /home/amshestov/smchankaev/data/data_fusion_cross_enc_100/train
+  valid_data:
+    _target_: matching_bank_x_rmb.M3ColesSupervisedIterableDataset    
+    splitter: ${split.no_split}
+    col_time: ${data_module.train_data.col_time}
+    cols_classes: ${data_module.train_data.cols_classes}
+    mod_names: ${data_module.train_data.mod_names}
+    data:
+        _target_: ptls.data_load.datasets.ParquetDataset
+        i_filters: ${ifilters.i_filters_early_fusion}         
+        data_files:
+            _target_: ptls.data_load.datasets.ParquetFiles
+            file_path:  
+              - /home/amshestov/smchankaev/data/data_fusion_cross_enc_100/val
+  train_batch_size: 64
+  train_num_workers: 8
+  valid_batch_size: 64
+  valid_num_workers: 8
+
+trx_encoders: 
+    trx: ${trx.trx_trx_encoder}
+    click: ${trx.click_trx_encoder}
+
+pl_module:
+  _target_: early_fusion_matching.EarlyFusionMatchingModule
+  fusion: "early"
+  validation_metric:
+    _target_: ptls.frames.coles.metric.BatchRecallTopK
+    K: 1
+    metric: cosine
+  multimodal_seq_encoder: ${seq_encoder.multimodal_seq_encoder}
+  loss:
+    # _target_: matching-bank_x_rmb.M3SoftmaxLoss
+    _target_: torch.nn.BCEWithLogitsLoss 
+  optimizer_partial:
+    _partial_: true
+    _target_: torch.optim.AdamW
+    lr: 0.0001
+    weight_decay: 1e-6
+  lr_scheduler_partial:
+    _partial_: true
+    _target_: torch.optim.lr_scheduler.StepLR
+    step_size: 1
+    gamma: 0.95
+  initial_lr: ${pl_module.optimizer_partial.lr}
+  warmup_steps: 200

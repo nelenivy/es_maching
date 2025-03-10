@@ -1,0 +1,102 @@
+fold: 4
+
+defaults:
+  - _self_
+  - trx/data_fusion
+  - split/splitters
+  - seq_encoder/default
+  - ifilters/data_fusion
+
+exp_name: data_fusion_late_fusion
+logger_name: ${exp_name}
+
+#logger_name: matching_conf_${fold}
+
+inference_run: false
+downstream_run: false
+
+trainer:
+    max_epochs: 50
+    accelerator: gpu
+    enable_progress_bar: True
+    gradient_clip_val: 0.5
+    log_every_n_steps: 50
+    limit_val_batches: 512
+
+data_module:  
+  _target_: ptls.frames.PtlsDataModule
+  train_data:
+    _target_: matching_bank_x_rmb.M3ColesIterableDataset
+    splitter: ${split.splitter_2}
+    col_time: event_time
+    mod_names:
+     - trx
+     - click
+    data:
+        _target_: parquet_shuffle_dataset.ShuffleParquetDataset
+        shuffle_files: True
+        shuffle_one_file: True
+        i_filters: ${ifilters.i_filters}
+        data_files:
+            _target_: ptls.data_load.datasets.ParquetFiles
+            file_path: 
+              - /home/amshestov/smchankaev/MBD/scenario_datafusion/data/mm_dataset_fold/fold=0
+              - /home/amshestov/smchankaev/MBD/scenario_datafusion/data/mm_dataset_fold/fold=1
+              - /home/amshestov/smchankaev/MBD/scenario_datafusion/data/mm_dataset_fold/fold=2
+              - /home/amshestov/smchankaev/MBD/scenario_datafusion/data/mm_dataset_fold/fold=3
+              #- /home/amshestov/smchankaev/MBD/scenario_datafusion/data/mm_dataset_fold/fold=4
+  valid_data:
+    _target_: matching_bank_x_rmb.M3ColesIterableDataset
+    splitter: ${split.no_split}
+    col_time: ${data_module.train_data.col_time}
+    mod_names: ${data_module.train_data.mod_names}
+    data:
+        _target_: ptls.data_load.datasets.ParquetDataset
+        i_filters: ${ifilters.i_filters}
+        data_files:
+            _target_: ptls.data_load.datasets.ParquetFiles
+            file_path: 
+              - /home/amshestov/smchankaev/MBD/scenario_datafusion/data/mm_dataset_fold/fold=4
+  train_batch_size: 256
+  train_num_workers: 8
+  valid_batch_size: 256
+  valid_num_workers: 8
+
+trx_encoder1: ${trx.trx_trx_encoder}
+trx_encoder2: ${trx.click_trx_encoder}
+
+pl_module:
+  _target_: matching_bank_x_rmb.M3CoLESModule
+  validation_metric:
+    _target_: ptls.frames.coles.metric.BatchRecallTopK
+    K: 1
+    metric: cosine
+  head:
+    _target_: ptls.nn.Head
+    input_size: 128
+    use_norm_encoder: True
+    hidden_layers_sizes: 
+      - 128
+      - 128
+    objective: "regression"
+    num_classes: 128
+  seq_encoders:
+    trx: ${seq_encoder.seq_encoder1}
+    click: ${seq_encoder.seq_encoder2}
+  loss:
+    # _target_: matching-bank_x_rmb.M3SoftmaxLoss
+    _target_: matching_softmax_loss.MatchingSoftmaxLoss #ptls.frames.coles.losses.SoftmaxLoss
+    only_other_mod: False
+  optimizer_partial:
+    _partial_: true
+    _target_: torch.optim.AdamW
+    lr: 0.0001 #0.0003
+    # lr: trial.suggest_loguniform('learning_rate', 1e-5, 1e-2) # 0.001 #0.0003
+    weight_decay: 1e-5
+  lr_scheduler_partial:
+    _partial_: true
+    _target_: torch.optim.lr_scheduler.StepLR
+    step_size: 1
+    gamma: 0.95
+  initial_lr: ${pl_module.optimizer_partial.lr}
+  warmup_steps: 200

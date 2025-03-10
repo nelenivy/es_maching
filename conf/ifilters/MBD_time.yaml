@@ -1,0 +1,31 @@
+time_proc_trx:
+        _target_: time_proc_matching.TimeProcMatchingFull
+        time_col: trx_event_time
+        source: trx
+time_proc_geo:
+        _target_: time_proc_matching.TimeProcMatchingFull
+        time_col: geo_event_time
+        source: geo        
+        
+i_filters:
+     - _target_: ptls.data_load.iterable_processing.delete_nan.DeleteNan
+     - _target_: ptls.data_load.iterable_processing.SeqLenFilter
+       min_seq_len: 32
+     - _target_: ptls.data_load.iterable_processing.iterable_seq_len_limit.ISeqLenLimit
+       max_seq_len: 256
+     - _target_: ptls.data_load.iterable_processing.to_torch_tensor.ToTorch
+     - ${ifilters.time_proc_trx}
+     - ${ifilters.time_proc_geo}
+
+i_filters_early_fusion:
+     - _target_: ptls.data_load.iterable_processing.delete_nan.DeleteNan
+     - _target_: ptls.data_load.iterable_processing.feature_filter.FeatureFilter
+       keep_feature_names:
+            - label
+     - _target_: ptls.data_load.iterable_processing.SeqLenFilter
+       min_seq_len: 32
+     - _target_: ptls.data_load.iterable_processing.iterable_seq_len_limit.ISeqLenLimit
+       max_seq_len: 256
+     - _target_: ptls.data_load.iterable_processing.to_torch_tensor.ToTorch
+     - ${ifilters.time_proc_trx}
+     - ${ifilters.time_proc_geo}

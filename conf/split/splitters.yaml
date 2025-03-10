@@ -1,0 +1,8 @@
+no_split:
+      _target_: ptls.frames.coles.split_strategy.NoSplit
+
+splitter_2:
+      _target_: ptls.frames.coles.split_strategy.SampleSlices
+      split_count: 2
+      cnt_min: 28
+      cnt_max: 256

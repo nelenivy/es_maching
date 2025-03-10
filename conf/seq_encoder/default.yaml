@@ -1,0 +1,31 @@
+seq_encoder1:
+    _target_: x_transformer.XTransformerSeqEncoder
+    attn_layers:
+        _target_: x_transformer.Encoder
+        dim: 128
+        depth: 4
+        dynamic_pos_bias: true
+        dynamic_pos_bias_log_distance: false
+        pre_norm: false
+        #residual_attn: true
+    trx_encoder: ${trx_encoder1}
+    input_size: 136
+    col_time: 'event_time'
+    is_reduce_sequence: True
+    use_mask_of_padded: True
+
+seq_encoder2:
+    _target_: x_transformer.XTransformerSeqEncoder
+    attn_layers:
+        _target_: x_transformer.Encoder
+        dim: 128
+        depth: 4
+        dynamic_pos_bias: true
+        dynamic_pos_bias_log_distance: false
+        pre_norm: false
+        #residual_attn: true
+    trx_encoder: ${trx_encoder2}
+    input_size: 136
+    col_time: 'event_time'
+    is_reduce_sequence: True
+    use_mask_of_padded: True

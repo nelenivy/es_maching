@@ -1,0 +1,4 @@
+export PYTHONPATH="~/shestov/src/matching/:~/shestov/src/:~/shestov/src/pytorch-lifestream:~/shestov/src/pytorch-lifestream/ptls:$PYTHONPATH"
+echo $PYTHONPATH
+#python -m ptls.pl_train_module --config-dir "conf/" --config-name cikm_early_fusion_mod_embs_concat_transformer_time
+python -m m3_crossencoder_convert --parquet_in "/home/jovyan/shestov/src/matching/cikm2016_data_val_100000" --yaml_in "/home/jovyan/shestov/src/matching_src/conf/cikm2016_head_time.yaml" --checkpoint "/home/jovyan/shestov/src/matching_src/lightning_logs/cikm2016_late_fusion_head_time_refactor/version_8/checkpoints/epoch=10-step=21802.ckpt" --parquet_out "/home/jovyan/shestov/src/matching/cikm2016_data_val_100000_cross_enc_debug.parquet" --col_id data1_uid

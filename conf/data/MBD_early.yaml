@@ -1,0 +1,10 @@
+
+file_path_train: 
+      - "/home/amshestov/smchankaev/data/mm_cross_enc/fold=0"
+      - "/home/amshestov/smchankaev/data/mm_cross_enc/fold=1"
+      - "/home/amshestov/smchankaev/data/mm_cross_enc/fold=2"
+      - "/home/amshestov/smchankaev/data/mm_cross_enc/fold=3"
+      - "/home/amshestov/smchankaev/data/mm_cross_enc/fold=4"
+  
+file_path_val: 
+    - "/home/amshestov/smchankaev/data/mm_cross_enc/fold=-1"

@@ -1,0 +1,247 @@
+
+
+defaults:
+  - _self_
+
+
+exp_name: MBD_late_fusion_head_time_transformer_mask_only_same_mod_split_2_warmup_postln
+logger_name: ${exp_name}
+
+trainer:
+    # _target_: pytorch_lightning.Trainer
+    max_epochs: 15
+    accelerator: gpu
+    devices: 1
+    enable_progress_bar: True
+    gradient_clip_val: 0.5
+    log_every_n_steps: 50
+    limit_val_batches: 512
+    #limit_train_batches: 20
+    deterministic: True
+    precision: bf16
+    # logger:
+    #     _target_: pytorch_lightning.loggers.TensorBoardLogger
+    #     save_dir: lightning_logs
+    #     name: ${exp_name}
+    # callbacks:
+    #     - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    #       filename: '{epoch}'
+    #       every_n_epochs: 1
+    #       save_top_k: -1
+    #       monitor: recall_top_k
+    #       mode: max
+    
+time_proc_trx:
+        _target_: time_proc_matching.TimeProcMatchingFull
+        time_col: trx_event_time
+        source: trx
+time_proc_geo:
+        _target_: time_proc_matching.TimeProcMatchingFull
+        time_col: geo_event_time
+        source: geo        
+        
+i_filters:
+     - _target_: ptls.data_load.iterable_processing.delete_nan.DeleteNan
+     - _target_: ptls.data_load.iterable_processing.SeqLenFilter
+       min_seq_len: 32
+     - _target_: ptls.data_load.iterable_processing.iterable_seq_len_limit.ISeqLenLimit
+       max_seq_len: 256
+     - _target_: ptls.data_load.iterable_processing.to_torch_tensor.ToTorch
+     - ${time_proc_trx}
+     - ${time_proc_geo}
+         
+data_module:
+  _target_: ptls.frames.PtlsDataModule
+  train_data:
+    _target_: matching_bank_x_rmb.M3ColesIterableDataset
+    splitter:
+      _target_: ptls.frames.coles.split_strategy.SampleSlices #sugm
+      split_count: 2
+      cnt_min: 28
+      cnt_max: 256
+    col_time: event_time
+    mod_names:
+     - trx
+     - geo
+    data:
+        _target_: parquet_shuffle_dataset.ShuffleParquetDataset
+        shuffle_files: True
+        shuffle_one_file: True
+        i_filters: ${i_filters}
+        data_files:
+            _target_: ptls.data_load.datasets.ParquetFiles
+            file_path: 
+                # - "/home/jovyan/shestov/src/matching/cikm2016_data_train_100000/"
+                - "/home/amshestov/smchankaev/data/mm_dataset/fold=0"
+                - "/home/amshestov/smchankaev/data/mm_dataset/fold=1"
+                - "/home/amshestov/smchankaev/data/mm_dataset/fold=2"
+                - "/home/amshestov/smchankaev/data/mm_dataset/fold=3"
+                - "/home/amshestov/smchankaev/data/mm_dataset/fold=4"
+  valid_data:
+    _target_: matching_bank_x_rmb.M3ColesIterableDataset
+    splitter:
+      _target_: ptls.frames.coles.split_strategy.NoSplit
+    col_time: ${data_module.train_data.col_time}
+    mod_names: ${data_module.train_data.mod_names}
+    data:
+        _target_: ptls.data_load.datasets.ParquetDataset
+        i_filters: ${i_filters}
+        data_files:
+            _target_: ptls.data_load.datasets.ParquetFiles
+            file_path: 
+                - "/home/amshestov/smchankaev/data/mm_dataset/fold=-1"
+  train_batch_size: 256
+  train_num_workers: 8
+  valid_batch_size: 128
+  valid_num_workers: 8
+
+pl_module:
+  _target_: matching_bank_x_rmb.M3CoLESModule
+  validation_metric:
+    _target_: ptls.frames.coles.metric.BatchRecallTopK
+    K: 1
+    metric: cosine
+  head:
+    _target_: ptls.nn.Head
+    input_size: 128
+    use_norm_encoder: True
+    hidden_layers_sizes: 
+      - 128
+      - 128
+    objective: "regression"
+    num_classes: 128
+  seq_encoders:
+    trx:
+        _target_: x_transformer.XTransformerSeqEncoder
+        attn_layers:
+            _target_: x_transformer.Encoder
+            dim: 128
+            depth: 4
+            dynamic_pos_bias: true
+            dynamic_pos_bias_log_distance: false
+            pre_norm: false
+            #residual_attn: true
+        input_size: 136
+        col_time: 'event_time'
+        is_reduce_sequence: True
+        use_mask_of_padded: True        
+        trx_encoder: 
+          _target_: ptls.nn.TrxEncoder
+          embeddings_noise: 0.003
+          linear_projection_size: 136
+          embeddings: 
+              # client: 
+              #     in: 79784
+              #     out: 32
+              # event_time:
+              #     in: 78979
+              #     out: 32
+              amount: 
+                  in: 79784
+                  out: 32
+              event_type:
+                  in: 78979
+                  out: 32
+              event_subtype:
+                  in: 78979
+                  out: 32
+              currency:
+                  in: 78979
+                  out: 32
+              src_type11:
+                  in: 78979
+                  out: 32
+              src_type12:
+                  in: 78979
+                  out: 32
+              month:
+                   in: 12
+                   out: 2
+              week: 
+                  in: 5
+                  out: 2
+              weekday: 
+                   in: 7
+                   out: 2
+              hour:
+                   in: 24
+                   out: 2
+              # :
+              #     in: 78979
+              #     out: 32
+          #     url1: 
+          #         in: 10000
+          #         out: 16
+          #     url2: 
+          #         in: 10000
+          #         out: 48
+          #     url3: 
+          #         in: 10000
+          #         out: 48
+          #     month:
+          #         in: 12
+          #         out: 2
+          #     week: 
+          #         in: 5
+          #         out: 2
+          #     weekday: 
+          #         in: 7
+          #         out: 2
+          #     hour:
+          #         in: 24
+          #         out: 2
+          numeric_values:
+    geo: 
+        _target_: x_transformer.XTransformerSeqEncoder
+        attn_layers: 
+            _target_: x_transformer.Encoder
+            dim: 128
+            depth: 4
+            dynamic_pos_bias: true
+            dynamic_pos_bias_log_distance: false
+            pre_norm: false
+            #residual_attn: true
+        input_size: 136
+        col_time: 'event_time'
+        is_reduce_sequence: True
+        use_mask_of_padded: True
+        trx_encoder: 
+          _target_: ptls.nn.TrxEncoder
+          embeddings_noise: 0.003
+          linear_projection_size: 136
+          embeddings: 
+              geohash_4: 
+                  in: 58048
+                  out: 32
+              geohash_5:
+                  in: 58048
+                  out: 32
+              geohash_6:
+                  in: 58048
+                  out: 32
+              week: 
+                  in: 5
+                  out: 2
+              weekday: 
+                   in: 7
+                   out: 2
+              hour:
+                   in: 24
+                   out: 2
+  loss:
+    # _target_: matching-bank_x_rmb.M3SoftmaxLoss
+    _target_: matching_softmax_loss.MatchingSoftmaxLoss #ptls.frames.coles.losses.SoftmaxLoss
+    only_other_mod: False
+  optimizer_partial:
+    _partial_: true
+    _target_: torch.optim.AdamW
+    lr: 0.0001 #0.0003
+    # lr: trial.suggest_loguniform('learning_rate', 1e-5, 1e-2) # 0.001 #0.0003
+    weight_decay: 1e-5
+  lr_scheduler_partial:
+    _partial_: true
+    _target_: torch.optim.lr_scheduler.StepLR
+    step_size: 1
+    gamma: 0.95
+  initial_lr: ${pl_module.optimizer_partial.lr}
+  warmup_steps: 2000

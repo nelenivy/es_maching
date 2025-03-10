@@ -1,0 +1,19 @@
+i_filters:
+     - _target_: ptls.data_load.iterable_processing.delete_nan.DeleteNan
+     - _target_: ptls.data_load.iterable_processing.SeqLenFilter
+       min_seq_len: 32
+     - _target_: ptls.data_load.iterable_processing.iterable_seq_len_limit.ISeqLenLimit
+       max_seq_len: 256
+     - _target_: ptls.data_load.iterable_processing.to_torch_tensor.ToTorch
+
+
+i_filters_early_fusion:
+     - _target_: ptls.data_load.iterable_processing.delete_nan.DeleteNan
+     - _target_: ptls.data_load.iterable_processing.feature_filter.FeatureFilter
+       keep_feature_names:
+            - label
+     - _target_: ptls.data_load.iterable_processing.SeqLenFilter
+       min_seq_len: 32
+     - _target_: ptls.data_load.iterable_processing.iterable_seq_len_limit.ISeqLenLimit
+       max_seq_len: 256
+     - _target_: ptls.data_load.iterable_processing.to_torch_tensor.ToTorch

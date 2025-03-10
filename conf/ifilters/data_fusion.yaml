@@ -1,0 +1,84 @@
+i_filters:
+          - _target_: processing.DeleteNan
+            col_name: mcc_code
+          - _target_: processing.DeleteNan
+            col_name: cat_id
+          - _target_: processing.DeleteNan
+            col_name: user_id
+          - _target_: processing.TypeProc
+            col_name: transaction_amt
+          - _target_: ptls.data_load.iterable_processing.add_modal_name.AddModalName
+            source: trx
+            cols:
+              - mcc_code
+              - currency_rk
+              - transaction_amt
+          - _target_: ptls.data_load.iterable_processing.add_modal_name.AddModalName
+            source: click
+            cols:
+              - cat_id
+              - level_0
+              - level_1
+              - level_2
+          - _target_: ptls.data_load.iterable_processing.FeatureFilter
+            drop_feature_names:
+                - user_id
+                - higher_education
+                - new_uid
+          - _target_: ptls.data_load.iterable_processing.SeqLenFilter
+            min_seq_len: 32
+          - _target_: ptls.data_load.iterable_processing.ISeqLenLimit
+            max_seq_len: 256
+          - _target_: ptls.data_load.iterable_processing.time_proc.TimeProcMultimodal
+            source: trx
+            time_col: trx_event_time
+          - _target_: ptls.data_load.iterable_processing.time_proc.TimeProcMultimodal
+            source: click
+            time_col: click_event_time
+          - _target_: ptls.data_load.iterable_processing.ToTorch
+
+i_filters_early_fusion:
+          - _target_: processing.DeleteNan
+            col_name: mcc_code
+          - _target_: processing.DeleteNan
+            col_name: cat_id
+          - _target_: processing.TypeProc
+            col_name: transaction_amt
+          - _target_: ptls.data_load.iterable_processing.add_modal_name.AddModalName
+            source: trx
+            cols:
+              - mcc_code
+              - currency_rk
+              - transaction_amt
+          - _target_: ptls.data_load.iterable_processing.add_modal_name.AddModalName
+            source: click
+            cols:
+              - cat_id
+              - level_0
+              - level_1
+              - level_2
+          - _target_: ptls.data_load.iterable_processing.FeatureFilter
+            drop_feature_names:
+                - user_id
+                - higher_education
+                - new_uid
+            keep_feature_names:
+              - label
+          # - _target_: limit_time.LimitTime
+          #   mod_names:
+          #     - trx
+          #     - click
+          #   col_time: event_time
+          #   low_date_thresh: 2021-01-17
+          - _target_: ptls.data_load.iterable_processing.SeqLenFilter
+            min_seq_len: 32
+          - _target_: ptls.data_load.iterable_processing.ISeqLenLimit
+            max_seq_len: 256
+            #strategy: random
+          - _target_: ptls.data_load.iterable_processing.time_proc.TimeProcMultimodal
+            source: trx
+            time_col: trx_event_time
+          - _target_: ptls.data_load.iterable_processing.time_proc.TimeProcMultimodal
+            source: click
+            time_col: click_event_time
+          - _target_: ptls.data_load.iterable_processing.ToTorch

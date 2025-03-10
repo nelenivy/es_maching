@@ -1,0 +1,168 @@
+
+
+defaults:
+  - _self_
+
+
+exp_name: cikm_early_fusion_mod_embs_concat_transf_time_small
+logger_name: ${exp_name}
+
+trainer:
+    # _target_: pytorch_lightning.Trainer
+    max_epochs: 32
+    accelerator: gpu
+    devices: 1
+    enable_progress_bar: True
+    gradient_clip_val: 0.5
+    log_every_n_steps: 50
+    limit_val_batches: 512
+    accumulate_grad_batches: 4
+    deterministic: True
+    precision: bf16
+    # logger:
+    #     _target_: pytorch_lightning.loggers.TensorBoardLogger
+    #     save_dir: lightning_logs
+    #     name: ${exp_name}
+    # callbacks:
+    #     - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    #       filename: '{epoch}'
+    #       every_n_epochs: 1
+    #       save_top_k: -1
+    #       monitor: recall_top_k
+    #       mode: max
+
+data_module:
+  _target_: ptls.frames.PtlsDataModule
+  train_data:
+    _target_: early_fusion_matching.EarlyFusionM3SupervisedIterableDataset
+    splitter:
+      _target_: ptls.frames.coles.split_strategy.SampleSlices
+      split_count: 2
+      cnt_min: 28
+      cnt_max: 256
+    col_time: time
+    cols_classes:
+      - uid
+    mod_names:
+     - data
+    data:
+        _target_: dataset_dists.ParquetIndexDataset
+        parquet_in: "/home/jovyan/shestov/src/matching/cikm_100k_mid_fusion_val"
+        index_col: "uid"
+        i_filters:
+         - _target_: ptls.data_load.iterable_processing.feature_filter.FeatureFilter
+           keep_feature_names:
+            - data_uid
+           drop_feature_names:
+         - _target_: time_proc_matching.TimeProcMatchingFull
+           time_col: data_time
+           source: data
+         - _target_: ptls.data_load.iterable_processing.iterable_seq_len_limit.ISeqLenLimit
+           max_seq_len: 256
+         - _target_: matching_bank_x_rmb.AmtProc
+           amt_cols: 
+         # - _target_: ptls.data_load.iterable_processing.seq_len_filter.SeqLenFilter
+         #   min_seq_len: 120
+         #   sequence_col: rmb_url
+         - _target_: ptls.data_load.iterable_processing.to_torch_tensor.ToTorch
+
+  valid_data:
+    _target_: early_fusion_matching.EarlyFusionM3SupervisedIterableDataset    
+    splitter:
+      _target_: ptls.frames.coles.split_strategy.NoSplit
+    col_time: time
+    cols_classes:
+      - uid
+    mod_names:
+     - data
+    data:
+        _target_: dataset_dists.ParquetIndexDataset
+        parquet_in: "/home/jovyan/shestov/src/matching/cikm_100k_mid_fusion_val"
+        index_col: "uid"
+        i_filters:
+         - _target_: ptls.data_load.iterable_processing.feature_filter.FeatureFilter
+           keep_feature_names:
+            - data_uid
+           drop_feature_names:
+         - _target_: time_proc_matching.TimeProcMatchingFull
+           time_col: data_time
+           source: data
+         - _target_: ptls.data_load.iterable_processing.iterable_seq_len_limit.ISeqLenLimit
+           max_seq_len: 256
+         - _target_: matching_bank_x_rmb.AmtProc
+           amt_cols: 
+         # - _target_: ptls.data_load.iterable_processing.seq_len_filter.SeqLenFilter
+         #   min_seq_len: 120
+         #   sequence_col: rmb_url
+         - _target_: ptls.data_load.iterable_processing.to_torch_tensor.ToTorch
+  train_batch_size: 64
+  train_num_workers: 8
+  valid_batch_size: 64
+  valid_num_workers: 8
+
+pl_module:
+  _target_: early_fusion_matching.EarlyFusionMatchingModule
+  fusion: "early"
+  validation_metric:
+    _target_: ptls.frames.coles.metric.BatchRecallTopK
+    K: 1
+    metric: cosine
+  multimodal_seq_encoder:
+    _target_: early_fusion_matching.M3FusionModEncoderContainer
+    trx_encoders: 
+          data1:
+              _target_: ptls.nn.TrxEncoder
+              embeddings_noise: 0.003
+              embeddings: 
+                  url0: 
+                      in: 10000
+                      out: 16
+                  url1: 
+                      in: 10000
+                      out: 16
+                  url2: 
+                      in: 10000
+                      out: 48
+                  url3: 
+                      in: 10000
+                      out: 48
+                  month:
+                      in: 12
+                      out: 2
+                  week: 
+                      in: 5
+                      out: 2
+                  weekday: 
+                      in: 7
+                      out: 2
+                  hour:
+                      in: 24
+                      out: 2
+              numeric_values: 
+          data2: 'data1'
+    seq_encoder_cls: 
+        _target_: hydra.utils.get_class
+        path: x_transformer.XTransformerEncoder
+    attn_layers:
+        _target_: x_transformer.Encoder
+        dim: 136
+        depth: 4
+        dynamic_pos_bias: true
+        dynamic_pos_bias_log_distance: false
+    input_size: 136
+    col_time: "time"
+    is_reduce_sequence: True
+    concat: True
+  loss:
+    # _target_: matching-bank_x_rmb.M3SoftmaxLoss
+    _target_: torch.nn.BCEWithLogitsLoss 
+  optimizer_partial:
+    _partial_: true
+    _target_: torch.optim.AdamW
+    lr: 0.0001
+    weight_decay: 1e-4
+  lr_scheduler_partial:
+    _partial_: true
+    _target_: torch.optim.lr_scheduler.StepLR
+    step_size: 1
+    gamma: 0.95

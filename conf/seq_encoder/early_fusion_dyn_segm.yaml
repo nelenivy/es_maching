@@ -1,0 +1,20 @@
+multimodal_seq_encoder:
+    _target_: ${sec_encoder_class} #early_fusion_matching.M3FusionModEncoderContainer
+    use_mask_of_padded: true
+    pass_time_to_encoder: true
+    attn_layers:
+        _target_: x_transformer.Encoder
+        #post_emb_norm: True
+        dim: 128
+        depth: 4
+        dynamic_pos_bias: true
+        dynamic_pos_bias_use_time: true
+        dynamic_pos_bias_use_segm: true
+        dynamic_pos_bias_mlp_depth: 3
+        dynamic_pos_bias_log_distance: false
+        pre_norm: false
+    trx_encoders: ${trx_encoders}
+    input_size: 128
+    col_time: "event_time"
+    concat: true #False
+    is_reduce_sequence: true
