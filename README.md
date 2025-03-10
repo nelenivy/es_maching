@@ -101,16 +101,23 @@ This project utilizes several datasets for training and evaluation:
 *   **LR Scheduler:** StepLR, Step Size 1, Gamma 0.95
 *   **Warmup Steps:** 200
 
-| Model                                                                 | ROC AUC | F1    |
-| :-------------------------------------------------------------------- | :------ | :---- |
-| Early Fusion + Blending, Time2Vec + Dynamic Bias                      | 0.688   | 0.468 |
-| Early Fusion + Blending, Time2Vec, Diff Embd                         | 0.692   | 0.475 |
-| Early Fusion + Blending, Time2Vec                                     | 0.710   | 0.485 |
-| Vanilla Cross-Encoder, Rotary Embd                                   | 0.679   | 0.462 |
-| Vanilla Cross-Encoder, Pos Sinus Embd                                | 0.692   | 0.476 |
-| Vanilla Cross-Encoder, Time2Vec                                       | 0.709   | 0.485 |
-| Vanilla Cross-Encoder, Time2Vec + Dynamic Bias                       | 0.701   | 0.484 |
-| Vanilla Cross-Encoder, Time2Vec, Diff Embd                             | 0.706   | 0.485 |
+| Model                                                                    | ROC AUC | F1    |
+| :----------------------------------------------------------------------- | :------ | :---- |
+| Early Fusion + Blending, Dyn Time Bias, Learnable Time Embd             | 0.674   | 0.459 |
+| Early Fusion + Blending, Dyn Time Bias, Same Date                        | 0.689   | 0.468 |
+| Early Fusion + Blending, Rotary Embd                                    | 0.660   | 0.443 |
+| Early Fusion + Blending, Pos Sinus Embd                                 | 0.691   | 0.471 |
+| Early Fusion + Blending                                                  | 0.656   | 0.444 |
+| Early Fusion + Blending, Time2Vec + Dynamic Bias                         | 0.688   | 0.468 |
+| Early Fusion + Blending, Time2Vec, Diff Embd                            | 0.692   | 0.475 |
+| Early Fusion + Blending, Time2Vec                                        | 0.710   | 0.485 |
+| Vanilla Cross-Encoder, Rotary Embd                                      | 0.679   | 0.462 |
+| Vanilla Cross-Encoder, Pos Sinus Embd                                   | 0.692   | 0.476 |
+| Vanilla Cross-Encoder, Time2Vec                                          | 0.709   | 0.485 |
+| Vanilla Cross-Encoder, Time2Vec + Dynamic Bias                          | 0.701   | 0.484 |
+| Vanilla Cross-Encoder, Time2Vec, Diff Embd                              | 0.706   | 0.485 |
+| Vanilla Cross-Encoder, Dynamical Bias                                    | 0.688   | 0.467 |
+| Vanilla Cross-Encoder, Dynamical Bias, Learnable Time Embd              | 0.681   | 0.458 |
 
 # bash files for running training 
 bash files with launching runs are .sh files in the root repo.
