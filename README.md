@@ -60,7 +60,7 @@ This project utilizes several datasets for training and evaluation:
 
 # MBD dataset
 
-## Retriever, Augmentation Ablation Results (Recall@100)
+## Retriever, different variant 
 
 *   **Batch Size:** Train/Valid: 128
 *   **Head:** Input Size 128, 2x128 hidden layers, Regression.
@@ -70,7 +70,7 @@ This project utilizes several datasets for training and evaluation:
 *   **Warmup Steps:** 2000.
 *   **Epochs:** 15
 
-| Configuration                                                        | geo2trx (valid/r2b) | trx2geo (valid/b2r) |
+| Configuration                                                        | geo2trx (Recall@100) | trx2geo (Recall@100) |
 | :------------------------------------------------------------------- | :------------------ | :------------------ |
 | COLES Augmentation                                                  | 0.307343            | 0.311181            |
 | No Augmentation                                                     | 0.307786            | 0.313838            |
@@ -79,7 +79,6 @@ This project utilizes several datasets for training and evaluation:
 
 ## Reranker Model Performance
 
-# MBD dataset:
 *   **Batch Size:** Train 1024
 *   **Loss:** BCEWithLogitsLoss
 *   **Optimizer:** AdamW, LR 1e-4, Weight Decay 1e-5
@@ -95,6 +94,24 @@ This project utilizes several datasets for training and evaluation:
 
 
 # data fusion dataset:
+## Retriever, different variant 
+
+*   **Batch Size:** Train: 256
+*   **Head:** Input Size 128, 2x128 hidden layers.
+*   **Loss:** Matching Softmax Loss
+*   **Optimizer:** AdamW, LR 1e-4, Weight Decay 1e-5.
+*   **LR Scheduler:** StepLR, Step Size 1, Gamma 0.95
+*   **Warmup Steps:** 200
+
+| Configuration                                                          | click2trx (Recall top 100) | trx2click (Recall top 100) |
+| :--------------------------------------------------------------------- | :-------------- | :-------------- |
+| COLES Augmentation                                                    | 0.093707        | 0.097856        |
+| No Augmentation                                                       | 0.107538        | 0.110304        |
+| COLES Augmentation, Loss on Different Modalities Only                  | 0.137621        | 0.136238        |
+
+
+## Reranker Model Performance
+
 *   **Batch Size:** Train 64
 *   **Loss:** BCEWithLogitsLoss
 *   **Optimizer:** AdamW, LR 1e-4, Weight Decay 1e-6
