@@ -169,4 +169,23 @@ This project utilizes several datasets for training and evaluation:
 * files with prefix train_MBD are for training on MBD dataset
 * other bash files are for training on cikm2016 datasets
 
+## Convertation to crossencoder training format
+For crossencoder training we need to construct dataset out of late fusion dataset.
+
+Top-n candidates are retrieved by a trained retriever, positive pairs are added, then positive and negative (wrong) pairs are samples in 1:4 ratio.
+
+Bash files for launching crossencoder training dataset construction are bash files with "convert_to_crossencoder" prefix. 
+
+Parameters:
+*   `--parquet_in`: Input dataset, in a format of parquet data file or folder (multiple allowed).
+*   `--yaml_in`: YAML config file which was used for training retriever.
+*   `--checkpoint`: Retriever model checkpoint file.
+*   `--parquet_out`: Output Parquet file with crossencoder training dataset.
+*   `--col_id`: user ID column name (default: "epk_id").
+*   `--topn`: Number of top samples retrieved by retriever (default: 30).
+*   `--mod1_cols`: Additional columns for modality 1 (multiple allowed) - columns which don't have the modality1 prefix.
+*   `--mod2_cols`: Additional columns for modality 2 (multiple allowed) - columns which don't have the modality12 prefix.
+*   `--mod1_name`: modality 1 prefix. Columns of this modality should have this prefix, if not specified in mod1_cols.
+*   `--mod2_name`: modality 2 prefix. Columns of this modality should have this prefix, if not specified in mod2_cols.
+
 
