@@ -45,9 +45,9 @@ This project utilizes several datasets for training and evaluation:
     *   Data Download: The data files can be downloaded from this [Google Drive folder](https://drive.google.com/drive/folders/0B7XZSACQf0KdNXVIUXEyVGlBZnc).
     *   Data Conversion: Notebook cikm_data_process.ipynb is used to convert the dataset into the ptls format.
 
-## Results
-
+# Results
 # cikm2016 dataset
+## Retriever + reranker performance
 
 * Top-30 candidates are retrieved by retriever and then classified by reranker
 * The target is classification of positive pairs
@@ -67,6 +67,22 @@ This project utilizes several datasets for training and evaluation:
 | :-------------------- | :--------- |
 | No Augmentation       | 0.71       |
 | Coles Augmentation     | 0.74       |
+
+## Reranker Ablation Study
+* Top-100 candidates are retrieved by retriever, positive pairs are added, they are samples in 1:4 ratio, and this set is then classified by reranker
+* The same retriever is used for all experiments
+* The target is classification of positive pairs
+
+| Model                                                                 | F1    | ROC-AUC |
+| :-------------------------------------------------------------------- | :---- | :------ |
+| Middle Fusion, RNN                                                    | 0.63  | 0.84    |
+| Middle Fusion, RNN + time feat                                       | 0.67  | 0.86    |
+| Mid. Fusion, XTransformers + time                                     | 0.70  | 0.89    |
+| Mid. Fusion, XTransformers                                            | 0.68  | 0.88    |
+| Vanilla Cross Encoder                                   | 0.68  | 0.88    |
+| Early fusion, blend, add mod. token                                 | 0.724 | 0.91    |
+| Early fusion, blend, concat mod. token                               | 0.74  | 0.926   |
+| Early fusion, blend, concat mod. Token, time                        | 0.766 | 0.938   |
 
 # MBD dataset
 
