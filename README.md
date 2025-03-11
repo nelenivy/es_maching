@@ -61,6 +61,13 @@ This project utilizes several datasets for training and evaluation:
 | Early fusion, best from articles                  | 0.51     | 0.57      | 0.58   |
 | Early fusion + blending, modality token concat, transformers | 0.545    | 0.7       | 0.44   |
 
+## Retriever Augmentation Ablation Results (Recall@100)
+
+| Configuration         | Recall@100 |
+| :-------------------- | :--------- |
+| No Augmentation       | 0.71       |
+| Coles Augmentation     | 0.74       |
+
 # MBD dataset
 
 ## Retriever, different variant 
@@ -147,13 +154,19 @@ This project utilizes several datasets for training and evaluation:
 | Vanilla Cross-Encoder, Dynamical Bias                                    | 0.688   | 0.467 |
 | Vanilla Cross-Encoder, Dynamical Bias, Learnable Time Embd              | 0.681   | 0.458 |
 
+## Internal dataset. Scaling for Large Datasets (Test Size: 10^6)
+* Modalities: clickstream, transaction
+
+| Stage                                            | F1     |
+| :----------------------------------------------- | :----- |
+| Late Fusion                                      | 0.0082 |
+| Middle Fusion                                    | 0.0087 |
+| Tuned Top Retrieval                            | 0.0096 |
+
 # bash files for running training 
-bash files with launching runs are .sh files in the root repo.
-
-files with prefix train_data_fusion are for training on data fusion dataset
-
-files with prefix train_MBD are for training on MBD dataset
-
-other bash files are for training on cikm2016 datasets
+* bash files with launching runs are .sh files in the root repo.
+* files with prefix train_data_fusion are for training on data fusion dataset
+* files with prefix train_MBD are for training on MBD dataset
+* other bash files are for training on cikm2016 datasets
 
 
