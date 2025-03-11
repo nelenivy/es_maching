@@ -43,7 +43,7 @@ This project utilizes several datasets for training and evaluation:
 
     *   Competition Link: [CIKM Cup 2016](https://competitions.codalab.org/competitions/11171)
     *   Data Download: The data files can be downloaded from this [Google Drive folder](https://drive.google.com/drive/folders/0B7XZSACQf0KdNXVIUXEyVGlBZnc).
-    *   Data Conversion: Notebooks are used to convert the dataset into the ptls format.
+    *   Data Conversion: Notebook cikm_data_process.ipynb is used to convert the dataset into the ptls format.
 
 ## Results
 
@@ -163,7 +163,8 @@ This project utilizes several datasets for training and evaluation:
 | Middle Fusion                                    | 0.0087 |
 | Tuned Top Retrieval                            | 0.0096 |
 
-# bash files for running training 
+# Launching training and checking
+## bash files for running training 
 * bash files with launching runs are .sh files in the root repo.
 * files with prefix train_data_fusion are for training on data fusion dataset
 * files with prefix train_MBD are for training on MBD dataset
@@ -187,5 +188,24 @@ Parameters:
 *   `--mod2_cols`: Additional columns for modality 2 (multiple allowed) - columns which don't have the modality12 prefix.
 *   `--mod1_name`: modality 1 prefix. Columns of this modality should have this prefix, if not specified in mod1_cols.
 *   `--mod2_name`: modality 2 prefix. Columns of this modality should have this prefix, if not specified in mod2_cols.
+
+## Retriever/Reranker Quality Check Module
+m3_dataset_dists.py - this module checks the quality of a retriever and reranker system. Launch it from command line with arguments. 
+
+It can check only retriever or retriever+reranker. The measuring task is quality of classification of matched\non-matched pairs. The metrics are f1, recall, precision, roc auc.
+
+### Arguments
+
+*   `--parquet_in`: Test dataset, input parquet data file or folder (multiple allowed).
+*   `--yaml_embs`: YAML config for the embeddings model.
+*   `--checkpoint_embs`: Checkpoint file for the embeddings model.
+*   `--folder_out`: Output folder for results.
+*   `--yaml_reranker`: YAML config for the reranker model (if using reranker).
+*   `--checkpoint_reranker`: Checkpoint file for the reranker model (if using reranker).
+*   `--col_id`: ID column name (default: "epk_id").
+*   `--chunk_size`: Chunk size for metric calculation (if applicable).
+*   `--samples_num`: Number of samples for metric calculation (if applicable).
+*   `--write_matched`: Flag to write matched pairs.
+*   `--no_quality`: Flag to skip quality metric calculation.
 
 
